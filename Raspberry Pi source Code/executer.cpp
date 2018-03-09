@@ -108,7 +108,7 @@ void Executer::__load_config() {
 				try {
 					_devices[i2cItem.Key]->init(i2cItem.Key);
 				} catch (std::exception& e) {
-					std::cout << "Failed to initialize I2C device. Not using " << item.Value << " A.K.A " << item.Value << endl;
+					std::cout << "Failed to initialize I2C device. Not using " << item.Value << " A.K.A " << item.Value << std::endl;
 					std::cout << e.what() << endl;
 
 
@@ -128,7 +128,7 @@ void Executer::__load_config() {
 				try {
 					_devices[item.Value]->init(item.Value);
 				} catch (std::exception& e) {
-					std::cout << "Failed to initialize device. Not using " << item.Value << " A.K.A " << item.Value << endl;
+					std::cout << "Failed to initialize device. Not using " << item.Value << " A.K.A " << item.Value << std::endl;
 					std::cout << e.what() << endl;
 
 

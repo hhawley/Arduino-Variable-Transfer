@@ -97,8 +97,7 @@ void SerialCommunicator::init(const std::string& ttydir) {
 
                 throw std::runtime_error("Unable to set port as non-blocking");
 
-        }
-
+    }
 
 	__set_interface_attribs(B9600, 0);
 	__set_blocking(0);
