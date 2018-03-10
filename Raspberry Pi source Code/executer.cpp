@@ -109,7 +109,7 @@ void Executer::__load_config() {
 					_devices[i2cItem.Key]->init(i2cItem.Key);
 				} catch (std::exception& e) {
 					std::cout << "Failed to initialize I2C device. Not using " << item.Value << " A.K.A " << item.Value << std::endl;
-					std::cout << e.what() << endl;
+					std::cout << e.what() << std::endl;
 
 
 					//Cleaning up not necessary items...
@@ -129,7 +129,7 @@ void Executer::__load_config() {
 					_devices[item.Value]->init(item.Value);
 				} catch (std::exception& e) {
 					std::cout << "Failed to initialize device. Not using " << item.Value << " A.K.A " << item.Value << std::endl;
-					std::cout << e.what() << endl;
+					std::cout << e.what() << std::endl;
 
 
 					//Cleaning up not necessary items...
@@ -226,7 +226,7 @@ std::string Executer::__send_command(const std::string& cmd) {
 
 			if(r_msg != "") {
 				_outputFile << r_msg;
-				return "Recieved messsage" + r_msg + "from device " + r_device + "\n";
+				return "Recieved messsage: " + r_msg + " from device " + r_device + "\n";
 
 			} else {
 

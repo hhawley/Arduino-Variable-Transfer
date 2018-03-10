@@ -26,7 +26,7 @@ SerialCommunicator::~SerialCommunicator() {
 void SerialCommunicator::init(const std::string& ttydir) {
 
 	_ttydir = ttydir;
-	_fileID = open(ttydir.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+	_fileID = open(ttydir.c_str(), O_RDWR | O_NOCTTY );
 	if(_fileID < 0) {
         int errsv = errno;
         std::string errorString = "";
@@ -93,14 +93,14 @@ void SerialCommunicator::init(const std::string& ttydir) {
 		throw std::runtime_error("Failed to open Serial port: " + _ttydir + " with error: " + errorString);
 	}
 
-	if(fcntl(_fileID, F_SETFL, O_NONBLOCK) < 0) {
+	// if(fcntl(_fileID, F_SETFL, O_NONBLOCK) < 0) {
 
-                throw std::runtime_error("Unable to set port as non-blocking");
+ //                throw std::runtime_error("Unable to set port as non-blocking");
 
-    }
+ //    }
 
 	__set_interface_attribs(B9600, 0);
-	__set_blocking(0);
+	__set_blocking(1);
 
 }
 
@@ -164,7 +164,7 @@ void SerialCommunicator::__set_interface_attribs (int speed, int parity)
         tty.c_lflag = 0;                // no signaling chars, no echo,
                                         // no canonical processing
         tty.c_oflag = 0;                // no remapping, no delays
-        tty.c_cc[VMIN]  = 0;            // read doesn't block
+        tty.c_cc[VMIN]  = 3;            // read doesn't block
         tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
 
         tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
