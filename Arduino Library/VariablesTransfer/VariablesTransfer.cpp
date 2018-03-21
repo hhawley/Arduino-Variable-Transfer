@@ -1,5 +1,4 @@
 #include <VariablesTransfer.h>
-#include <Wire.h>
 
 uint16_t* VarTransfer::__variables_ptr = new uint16_t[VARIABLE_MAX_BUFFER];
 char VarTransfer::__buffer[NUMBER_MAX_BUFFER] = {0};
