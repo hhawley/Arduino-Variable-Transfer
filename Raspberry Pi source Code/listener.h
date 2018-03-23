@@ -11,7 +11,7 @@ public:
 	ChangeVariablesListener();
 	~ChangeVariablesListener();
 
-	void init(const char* fifoName);
+	void init(const char*);
 	void run();
 	std::thread spawn();
 	std::string getMessage();

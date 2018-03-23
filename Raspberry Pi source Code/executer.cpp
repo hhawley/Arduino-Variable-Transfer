@@ -26,9 +26,8 @@ void Executer::init() {
 void Executer::run() {
 
 	if(_listener->isNewMessage()) {
-
 			std::string cmd = __parse_command(_listener->getMessage());
-			std::string response = __send_command(cmd);
+			std::string response = __handle_command(cmd);
 			std::cout << response << std::endl;
 	}
 
@@ -43,7 +42,7 @@ void Executer::__run_thread() {
 				if(_listener->isNewMessage()) {
 
 						std::string cmd = __parse_command(_listener->getMessage());
-						std::string response = __send_command(cmd);
+						std::string response = __handle_command(cmd);
 						std::cout << response << std::endl;
 
 				}
@@ -62,11 +61,12 @@ std::thread Executer::spawn() {
 	return std::thread(&Executer::__run_thread, this);
 }
 
+// Loads the alias commands and the devices from data.cfg
 void Executer::__load_config() {
 	std::ifstream file("data.cfg");
 
-	bool areTheyCommands=false;
-	bool areTheyAlias=false;
+	bool areTheyCommands = false;
+	bool areTheyAlias = false;
 
 	std::string line;
 	std::string variable, value;
@@ -84,21 +84,23 @@ void Executer::__load_config() {
 		} else if(line.length() == 0) { continue; }
 
 		if(areTheyCommands) {
+
 			auto item = ___parse_config_line(line);
 
 			if(item.Key.length() != 0) {
-				printf("New Command: %s, %s\n", item.Key.c_str(), item.Value.c_str());
+				std::cout << "New Command:" <<item.Key.c_str() << ", " << item.Value.c_str() << std::endl;
 				_commandDictionary[item.Key] = item.Value;
 			}
+
 		} else if(areTheyAlias) {
 
 			auto item = ___parse_config_line(line);
 			auto i2cItem = ___parse_config_line(item.Value, ' ');
 
-			printf("New device: %s, %s\n", item.Key.c_str(), item.Value.c_str());
+			std::cout << "New device: " << item.Key.c_str() << ", " << item.Value.c_str() << std::endl;
 
 			if(i2cItem.Value.length() != 0) {
-				printf("with i2c address: %s\n", i2cItem.Value.c_str());
+				std::cout << "with i2c address: " << i2cItem.Value.c_str() << std::endl;
 				_devicesAlias[item.Key] = i2cItem.Key;
 				_devicesAlias[i2cItem.Key] = i2cItem.Key;
 
@@ -108,9 +110,8 @@ void Executer::__load_config() {
 				try {
 					_devices[i2cItem.Key]->init(i2cItem.Key);
 				} catch (std::exception& e) {
-					std::cout << "Failed to initialize I2C device. Not using " << item.Value << " A.K.A " << item.Value << std::endl;
+					std::cout << "Failed to initialize I2C device. Not using " << item.Value << " A.K.A " << item.Key << std::endl;
 					std::cout << e.what() << std::endl;
-
 
 					//Cleaning up not necessary items...
 					_devicesAlias.erase(item.Key);
@@ -128,9 +129,8 @@ void Executer::__load_config() {
 				try {
 					_devices[item.Value]->init(item.Value);
 				} catch (std::exception& e) {
-					std::cout << "Failed to initialize device. Not using " << item.Value << " A.K.A " << item.Value << std::endl;
+					std::cout << "Failed to initialize device. Not using " << item.Value << " A.K.A " << item.Key << std::endl;
 					std::cout << e.what() << std::endl;
-
 
 					//Cleaning up not necessary items...
 					_devicesAlias.erase(item.Key);
@@ -145,88 +145,91 @@ void Executer::__load_config() {
 	}
 }
 
-std::string Executer::__parse_command(const std::string& msg) {
+// Parses a command, finds if its a raw command (i.e {0,0,1}) or an alias command and turns it into a raw command.
+std::string Executer::__parse_command(const std::string& msg__o) {
 
-	std::string parse_msg = "";
+	std::string parseMsg = "";
 	unsigned int pos;
 
-	std::string trim_msg = msg.substr(0, msg.find('\n'));
+	std::string trimMsg = msg__o.substr(0, msg__o.find('\n'));
 
-	std::cout << trim_msg.c_str() << std::endl;
-	pos = trim_msg.find("{");
+	std::cout << trimMsg.c_str() << std::endl;
+	pos = trimMsg.find("{");
 	if(pos != UINT_MAX) {
 		//Msg is a raw message
-		printf("Nothing to do\n");
+		return msg__o;
 	} else {
 		//Msg is a command
-		pos = trim_msg.find(" ");
+		pos = trimMsg.find(" ");
 		if(pos != UINT_MAX) {
 			//Has arguments
-			std::string args = trim_msg.substr(pos+1);
-			std::string command = trim_msg.substr(0, pos);
+			std::string args = trimMsg.substr(pos+1);
+			std::string command = trimMsg.substr(0, pos);
 
 			std::vector< std::string > arguments;
 			___get_arguments(args, arguments);
 
-			parse_msg = _commandDictionary[command];
+			parseMsg = _commandDictionary[command];
 			char prse_msg_char[100];
 			int error = 0;
 
 			if(arguments.size() == 1) {
-				error = sprintf(prse_msg_char, parse_msg.c_str(), arguments[0].c_str());
+				error = sprintf(prse_msg_char, parseMsg.c_str(), arguments[0].c_str());
 			} else if(arguments.size() == 2) {
-				error = sprintf(prse_msg_char, parse_msg.c_str(), arguments[0].c_str(), arguments[1].c_str());
+				error = sprintf(prse_msg_char, parseMsg.c_str(), arguments[0].c_str(), arguments[1].c_str());
 			} else if(arguments.size() == 3) {
-				error = sprintf(prse_msg_char, parse_msg.c_str(), arguments[0].c_str(), arguments[1].c_str(), arguments[2].c_str());
+				error = sprintf(prse_msg_char, parseMsg.c_str(), arguments[0].c_str(), arguments[1].c_str(), arguments[2].c_str());
 			} else if(arguments.size() > 3) {
-				printf("%s\n", "Too many arguments in the command.");
+				std::cout << "Too many arguments in the command." << std::endl;
 				error = -1;
 			}
 
-			if(error < 0) { parse_msg = "";	}
-			else { parse_msg = prse_msg_char; }
+			if(error < 0) { parseMsg = "";	}
+			else { parseMsg = prse_msg_char; }
 
 		} else {
 
 			// No arguments, just look it up in the dictionary
-			parse_msg = _commandDictionary[trim_msg];
+			parseMsg = _commandDictionary[trimMsg];
 		}
 
 	}
 
-	return parse_msg;
+	return parseMsg;
 
 }
 
-std::string Executer::__send_command(const std::string& cmd) {
-	if(cmd == "") {
+
+// Prepares the command to be sent, checks for errors, and receives the data from the port.
+std::string Executer::__handle_command(const std::string& cmd__o) {
+	if(cmd__o == "") {
 		return "No command";
 	}
 
-	auto checkFormat = cmd.find(" ");
+	auto checkFormat = cmd__o.find(" ");
 
 	if(checkFormat == UINT_MAX) {
 		return "Incorrect type of command";
 	}
 
-	std::string device = cmd.substr(0, checkFormat);
-	std::string cmd_toSend = cmd.substr(checkFormat + 1);
+	std::string device = cmd__o.substr(0, checkFormat);
+	std::string cmdToSend = cmd__o.substr(checkFormat + 1);
 
-	auto r_device = _devicesAlias[device];
-	if(r_device == "") {
-		return cmd + ": Device does not exist";
+	auto selectedDevice = _devicesAlias[device];
+	if(selectedDevice == "") {
+		return cmd__o + ": Device does not exist";
 	}
 
-	auto pdevice = _devices[r_device];
+	auto pdevice = _devices[selectedDevice];
 	if(pdevice) {
-		if(___s_msg(pdevice, cmd_toSend)) {
+		if(___s_msg(pdevice, cmdToSend)) {
 
-			std::cout << "Sent messsage " << cmd_toSend << " to device " << r_device << std::endl;
+			std::cout << "Sent messsage " << cmdToSend << " to device " << selectedDevice << std::endl;
 			auto r_msg = ___r_msg(pdevice);
 
 			if(r_msg != "") {
 				_outputFile << r_msg;
-				return "Recieved messsage: " + r_msg + " from device " + r_device + "\n";
+				return "Recieved messsage: " + r_msg + " from device " + selectedDevice;
 
 			} else {
 
@@ -236,13 +239,14 @@ std::string Executer::__send_command(const std::string& cmd) {
 
 		}
 
-		return "Failed to send message to " + r_device;
+		return "Failed to send message to " + selectedDevice;
 
 	} else {
-		throw std::runtime_error("Device " + r_device + " does not exist.");
+		throw std::runtime_error("Device " + selectedDevice + " does not exist.");
 	}
 }
 
+// Gets arguments from a command recursively, and adds them to args_v
 void Executer::___get_arguments(const std::string& args, 
 std::vector<std::string>& args_v) {
 
@@ -254,33 +258,34 @@ std::vector<std::string>& args_v) {
 		std::string argument = args.substr(0, newPos);
 		args_v.push_back(argument);
 
-		std::string other_arguments = args.substr(newPos+1);
+		std::string otherArguments = args.substr(newPos+1);
 
-		___get_arguments(other_arguments, args_v);
+		___get_arguments(otherArguments, args_v);
 	}
 }
 
 // Source: https://stackoverflow.com/questions/31103883/reading-key-value-pairs-from-a-file-and-ignoring-comment-lines
-DictionaryItem Executer::___parse_config_line(const std::string& line, const char& delimiter) {
+DictionaryItem Executer::___parse_config_line(const std::string& line__o, const char& delimiter__o) {
 
 	DictionaryItem item;
-	std::istringstream is_line(line);
+	std::istringstream isLine(line__o);
 
-	if(line[0] == '#') { return item; }
+	if(line__o[0] == '#') { return item; }
 
-	if(std::getline(is_line, item.Key, delimiter)) {
-		std::getline(is_line, item.Value);
+	if(std::getline(isLine, item.Key, delimiter__o)) {
+		std::getline(isLine, item.Value);
 	}
 
 	return item;
 
 }
 
-bool Executer::___s_msg(std::shared_ptr<Stream>& device, const std::string& msg) {
+// Send a message to port/device
+bool Executer::___s_msg(std::shared_ptr<Stream>& device__o, const std::string& msg__o) {
 
 	for(int retry = 0; retry < RETRIES; retry++) {
 
-		if(device->sendMessage(msg)) {
+		if(device__o->sendMessage(msg__o)) {
 			return true;
 		}
 		else { usleep (50); }
@@ -291,11 +296,12 @@ bool Executer::___s_msg(std::shared_ptr<Stream>& device, const std::string& msg)
 
 }
 
-std::string Executer::___r_msg(std::shared_ptr<Stream>& device) {
+// Read a message from port/device
+std::string Executer::___r_msg(std::shared_ptr<Stream>& device__o) {
 
 	for(int retry = 0; retry < RETRIES; retry++) {
 
-		auto msg = device->readMessage();
+		auto msg = device__o->readMessage();
 
 		if(msg != "") {
 			return msg;

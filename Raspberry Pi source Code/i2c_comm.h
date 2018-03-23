@@ -7,8 +7,8 @@ public:
 	I2Communicator(const int& address);
 	~I2Communicator();
 
-	virtual void init(const std::string& ttydir);
-	virtual bool sendMessage(const std::string& msg);
+	virtual void init(const std::string&);
+	virtual bool sendMessage(const std::string&);
 	virtual std::string readMessage();
 private:
 

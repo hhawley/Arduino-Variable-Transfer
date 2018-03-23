@@ -23,8 +23,8 @@ I2Communicator::~I2Communicator() {
 
 }
 
-void I2Communicator::init(const std::string& ttydir) {
-	_fileID = open(ttydir.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+void I2Communicator::init(const std::string& ttydir__o) {
+	_fileID = open(ttydir__o.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if(_fileID < 0) {
         int errsv = errno;
         std::string errorString = "";
@@ -88,7 +88,7 @@ void I2Communicator::init(const std::string& ttydir) {
             break;
     	}
 
-		throw std::runtime_error("Failed to open I2C port: " + ttydir + " with error: " + errorString);
+		throw std::runtime_error("Failed to open I2C port: " + ttydir__o + " with error: " + errorString);
 	}
 
 	if (ioctl(_fileID, I2C_SLAVE, _i2cAddress) < 0) {
@@ -123,16 +123,16 @@ void I2Communicator::init(const std::string& ttydir) {
 
         if(fcntl(_fileID, F_SETFL, O_NONBLOCK) < 0) {
 
-                throw std::runtime_error("Unable to set port as non-blocking");
+            throw std::runtime_error("Unable to set port as non-blocking");
 
         }
 }
 
 
-bool I2Communicator::sendMessage(const std::string& msg) {
+bool I2Communicator::sendMessage(const std::string& msg__o) {
 
-	printf("Sending message: %s to address %d\n ", msg.c_str(), _i2cAddress);
-	int status = write(_fileID, (unsigned char*)msg.c_str(), msg.size());
+	std::cout << "Sending message: " <<  msg__o.c_str() << " to address " _i2cAddress << std::endl;
+	int status = write(_fileID, (unsigned char*)msg__o.c_str(), msg__o.size());
 
 	if(status < 0) {
         int errsv = errno;
@@ -166,38 +166,3 @@ std::string I2Communicator::readMessage() {
     return std::string((char*)buff);
 
 }
-
-// int main(int argc, char* argv[]) {
-// 	printf("Starting\n");
-// 	init_i2c();
-// 	return send_i2c_message(1, "{1,23}");
-	
-// }
-
-// int init_i2c() {
-
-// 	if((fd = open("/dev/i2c-0", O_WRONLY)) < 0) {
-// 		cout << "Failed to open NeoPi i2c port" << endl;
-// 		return -1;
-// 	}
-
-// 	if (ioctl(fd, I2C_SLAVE, 0x04) < 0)
-//     {                                       
-//         cout << "Unable to get bus access to talk to slave" << endl;
-//         return -1;
-//     }
-
-//     return 1;
-
-// }
-
-// int send_i2c_message(int size, const char* msg) {
-
-// 	string ss = msg;
-// 	printf("Sending message: %s\n", msg);
-
-// 	return i2c_smbus_write_i2c_block_data(fd, 1, ss.size(), 
-// 	(unsigned char*)msg);
-
-// }
-

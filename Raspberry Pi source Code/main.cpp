@@ -40,6 +40,7 @@ int main(int argc, char const *argv[])
 
 				listener->run();
 				executer->run();
+				usleep (100);
 
 			}
 	// 	} catch (std::exception& e) {

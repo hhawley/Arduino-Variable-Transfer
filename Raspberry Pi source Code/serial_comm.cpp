@@ -23,10 +23,10 @@ SerialCommunicator::~SerialCommunicator() {
 
 }
 
-void SerialCommunicator::init(const std::string& ttydir) {
+void SerialCommunicator::init(const std::string& ttydir__o) {
 
-	_ttydir = ttydir;
-	_fileID = open(ttydir.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
+	_ttydir = ttydir__o;
+	_fileID = open(ttydir__o.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
 	if(_fileID < 0) {
         int errsv = errno;
         std::string errorString = "";
@@ -104,11 +104,11 @@ void SerialCommunicator::init(const std::string& ttydir) {
 
 }
 
-bool SerialCommunicator::sendMessage(const std::string& msg) {
+bool SerialCommunicator::sendMessage(const std::string& msg__o) {
 
-	int status = write(_fileID, msg.c_str(), msg.length());
-	usleep ((msg.length()) * 100); 
-	printf("Sending message: %s to address %s\n ", msg.c_str(), _ttydir.c_str());
+	int status = write(_fileID, msg__o.c_str(), msg__o.length());
+	usleep ((msg__o.length()) * 100); 
+	printf("Sending message: %s to address %s\n ", msg__o.c_str(), _ttydir.c_str());
 
 	if(status <  0) {
 		int errsv = errno;
@@ -126,14 +126,14 @@ bool SerialCommunicator::sendMessage(const std::string& msg) {
 
 std::string SerialCommunicator::readMessage() {
 
-	char buff[10*4096];
-    char c_buf;
+	char messageBuff[10*4096];
+    char singleCharBuff;
     int status = 0;
     int spot = 0;
 
     do{
-	   status = read(_fileID, &c_buf, sizeof(c_buf));
-       sprintf(&buff[spot], "%c", c_buf);
+	   status = read(_fileID, &singleCharBuff, sizeof(singleCharBuff));
+       messageBuff[spot] = singleCharBuff;
        spot += status;
     } while (status > 0);
 
@@ -148,7 +148,7 @@ std::string SerialCommunicator::readMessage() {
         }
 	}
 
-	return std::string(buff);
+	return std::string(messageBuff);
 }
 
 //https://stackoverflow.com/questions/6947413/how-to-open-read-and-write-from-serial-port-in-c
@@ -203,7 +203,7 @@ void SerialCommunicator::__set_blocking (int should_block)
                 throw std::runtime_error("Failed to set interface attributes on Serial port");
         }
 
-        tty.c_cc[VMIN]  = should_block ? 30 : 0;
+        tty.c_cc[VMIN]  = should_block ? 3 : 0;
         tty.c_cc[VTIME] = 50;            // 0.5 seconds read timeout
 
         if (tcsetattr (_fileID, TCSANOW, &tty) != 0) {

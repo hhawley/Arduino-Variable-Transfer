@@ -45,11 +45,11 @@ private:
 	void __load_config();
 	void __run_thread();
 	std::string __parse_command(const std::string&);
-	std::string __send_command(const std::string&);
+	std::string __handle_command(const std::string&);
 
 	void ___get_arguments(const std::string&, std::vector<std::string>&);
-	DictionaryItem ___parse_config_line(const std::string& line, const char& delimitator='=');
-	bool ___s_msg(std::shared_ptr<Stream>& device, const std::string& msg);
-	std::string ___r_msg(std::shared_ptr<Stream>& device);
+	DictionaryItem ___parse_config_line(const std::string& line__o, const char& delimiter__o = '=');
+	bool ___s_msg(std::shared_ptr<Stream>&, const std::string&);
+	std::string ___r_msg(std::shared_ptr<Stream>&);
 };
 

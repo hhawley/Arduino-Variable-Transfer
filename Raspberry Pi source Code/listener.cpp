@@ -20,9 +20,9 @@ ChangeVariablesListener::~ChangeVariablesListener() {
 
 }
 
-void ChangeVariablesListener::init(const char* fifoName) {
+void ChangeVariablesListener::init(const char* fifoName__o) {
 
-	_FIFOname = fifoName;
+	_FIFOname = fifoName__o;
 	mkfifo(_FIFOname.c_str(), 0666);
 	_fileID = open(_FIFOname.c_str(), O_RDONLY | O_NONBLOCK);
 
@@ -42,14 +42,14 @@ void ChangeVariablesListener::run() {
 	if(err > 0 && !_newMessage) {
 
 		_newMessage = true;
-		std::cout << "New message\n";
+		std::cout << "New message" << std::endl;
 	
 	} else if(err < 0) {
 
 		int errsv = errno;
 		if(errsv != EAGAIN){
 
-			perror("Failed to read command with error");
+			perror("Failed to read command with error ");
 			throw std::runtime_error("");
 
 		}
@@ -66,11 +66,11 @@ void ChangeVariablesListener::__run_thread() {
 				if(err > 0 && !_newMessage) {
 
 					_newMessage = true;
-					std::cout << "New message\n";
+					std::cout << "New message" << std::endl;
 				
 				} else if(err < 0) {
 
-					perror("Failed to read command with error:");
+					perror("Failed to read command with error: ");
 					throw std::runtime_error("");
 
 				}
@@ -86,7 +86,7 @@ void ChangeVariablesListener::__run_thread() {
 }
 
 std::thread ChangeVariablesListener::spawn() {
-	return std::thread(&ChangeVariablesListener::run, this);
+	return std::thread(&ChangeVariablesListener::__run_thread, this);
 }
 
 std::string ChangeVariablesListener::getMessage() {
