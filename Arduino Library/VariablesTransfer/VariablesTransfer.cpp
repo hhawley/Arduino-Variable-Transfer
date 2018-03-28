@@ -6,6 +6,7 @@ char VarTransfer::__buffer[NUMBER_MAX_BUFFER] = {0};
 // Make sure index is not bigger than VARIABLE_MAX_BUFFER - 1
 void VarTransfer::linkVariable(const byte& index, uint16_t*& var) {
 
+	if(index > VARIABLE_MAX_BUFFER - 1) { return; }
 	var = __variables_ptr + index;
 
 }

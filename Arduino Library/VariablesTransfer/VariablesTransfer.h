@@ -6,14 +6,21 @@
 
 //You can make these bigger or smaller dependently on your RAM
 //restrictions
-#define VARIABLE_MAX_BUFFER 5
-#define NUMBER_MAX_BUFFER 6
+#ifndef VARIABLE_MAX_BUFFER
+	#define VARIABLE_MAX_BUFFER 7
+#endif
 
+#ifndef NUMBER_MAX_BUFFER
+	#define NUMBER_MAX_BUFFER 6
+#endif
+
+// Error defines
 #define VT_NO_DATA 0 
 #define ERR_INDEX_OUT_BOUNDS 1
 #define ERR_INCORRECT_FORMAT 2
 #define ERR_RW_BIT 3
 #define VT_SUCESS 42
+// end Error defines
 
 class VarTransfer {
 private:
