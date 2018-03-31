@@ -2,6 +2,7 @@
 #include <memory>
 #include <cstdio>
 #include <iostream>
+#include <unistd.h>
 #include "i2c_comm.h"
 #include "listener.h"
 #include "executer.h"

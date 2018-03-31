@@ -131,7 +131,7 @@ void I2Communicator::init(const std::string& ttydir__o) {
 
 bool I2Communicator::sendMessage(const std::string& msg__o) {
 
-	std::cout << "Sending message: " <<  msg__o.c_str() << " to address " _i2cAddress << std::endl;
+	std::cout << "Sending message: " <<  msg__o.c_str() << " to address " << _i2cAddress << std::endl;
 	int status = write(_fileID, (unsigned char*)msg__o.c_str(), msg__o.size());
 
 	if(status < 0) {

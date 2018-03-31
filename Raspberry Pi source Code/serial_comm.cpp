@@ -126,7 +126,7 @@ bool SerialCommunicator::sendMessage(const std::string& msg__o) {
 
 std::string SerialCommunicator::readMessage() {
 
-	char messageBuff[10*4096];
+	char messageBuff[10*4096] = {0};
     char singleCharBuff;
     int status = 0;
     int spot = 0;
@@ -173,7 +173,7 @@ void SerialCommunicator::__set_interface_attribs (int speed, int parity)
                                         // no canonical processing
         tty.c_oflag = 0;                // no remapping, no delays
         tty.c_cc[VMIN]  = 0;            // read doesn't block
-        tty.c_cc[VTIME] = 50;            // 0.5 seconds read timeout
+        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
 
         tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
 
@@ -204,7 +204,7 @@ void SerialCommunicator::__set_blocking (int should_block)
         }
 
         tty.c_cc[VMIN]  = should_block ? 3 : 0;
-        tty.c_cc[VTIME] = 50;            // 0.5 seconds read timeout
+        tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
 
         if (tcsetattr (_fileID, TCSANOW, &tty) != 0) {
                 perror("error %d setting term attributes");
