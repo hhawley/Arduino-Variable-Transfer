@@ -47,9 +47,8 @@ uint8_t VarTransfer::processVariables(Stream& stream) {
 			
 
 			latestByte = ___read_char(stream);
-			latestByte -= 48;
 
-			if(latestByte == 0) {
+			if(latestByte == 'W') {
 
 				latestByte = ___read_char(stream);
 				if(latestByte != ',') { return ERR_INCORRECT_FORMAT; }
@@ -68,7 +67,7 @@ uint8_t VarTransfer::processVariables(Stream& stream) {
 				stream.println("OK");
 				return VT_SUCESS;
 
-			} else if(latestByte == 1) {
+			} else if(latestByte == 'R') {
 
 				stream.println(__variables_ptr[index]);
 				return VT_SUCESS;

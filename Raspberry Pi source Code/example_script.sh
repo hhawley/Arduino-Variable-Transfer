@@ -28,6 +28,7 @@ echoTime "Starting experiment with sample $SAMPLE and with a duration of $TIME"
 echoTime "With a hardware trigger of $TRIGGER, and a software trigger of $SOFTWARETRIGGER"
 echoTime "Finally, we use a Vref of $VREF, maximum voltage of $VMAX, and a gain of $GAIN"
 send "resetMCAValues"
+send "setFilterVoltage 100" #not in millivolts/volts/etc
 send "startMCA"
 
 sleep 30m
