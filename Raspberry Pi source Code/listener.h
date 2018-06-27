@@ -5,24 +5,21 @@
 #include <string>
 #include <thread>
 
-class ChangeVariablesListener {
+class FIFOListener {
 	
 public:
-	ChangeVariablesListener();
-	~ChangeVariablesListener();
+	FIFOListener();
+	~FIFOListener();
 
-	void init(const char*);
+	void init(const std::string&);
 	void run();
-	std::thread spawn();
 	std::string getMessage();
 	bool isNewMessage();
 
 private:
-
-	void __run_thread();
 	
 	int _fileID;
-	char _buffer[1024];
+	char _buffer[MAX_BUFFER];
 	std::string _FIFOname;
 
 	bool _isMessageLast;

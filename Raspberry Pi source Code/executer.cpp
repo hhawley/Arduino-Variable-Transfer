@@ -10,21 +10,23 @@
 #include <iostream>
 
 
-Executer::Executer(ChangeVariablesListener* listener) : _listener(listener) { }
-Executer::Executer(std::shared_ptr<ChangeVariablesListener>& listener) : _listener(listener) { }
+Executer::Executer() : _listener(new FIFOListener()) {}
+Executer::Executer(FIFOListener* listener) 
+	: _listener(std::make_unique<FIFOListener>(listener)) { }
 
 Executer::~Executer() { 
 	_outputFile.close();
-
 }
 
-void Executer::init() {
+void Executer::init(const std::string& fifoName__o) {
+	_listener->init(fifoName__o);
 	_outputFile.open("output.txt");
 	__load_config();
 }
 
 void Executer::run() {
 
+	_listener->run();
 	if(_listener->isNewMessage()) {
 			std::string cmd = __parse_command(_listener->getMessage());
 			std::string response = __handle_command(cmd);
@@ -63,14 +65,18 @@ std::thread Executer::spawn() {
 
 // Loads the alias commands and the devices from data.cfg
 void Executer::__load_config() {
-	std::ifstream file("data.cfg");
+	std::ifstream configFile("data.cfg");
+
+	if(!configFile.is_open()) {
+		throw  std::runtime_error("Failed to open data.cfg, check if there is an available data.cfg");
+	}
 
 	bool areTheyCommands = false;
 	bool areTheyAlias = false;
 
 	std::string line;
 	std::string variable, value;
-	while(std::getline(file, line)) {
+	while(std::getline(configFile, line)) {
 		if(line.compare("Commands") == 0) {
 			areTheyCommands = true;
 			areTheyAlias = false;
@@ -88,7 +94,7 @@ void Executer::__load_config() {
 			auto item = ___parse_config_line(line);
 
 			if(item.Key.length() != 0) {
-				std::cout << "New Command:" <<item.Key.c_str() << ", " << item.Value.c_str() << std::endl;
+				std::cout << "New Command:" << item.Key.c_str() << ", " << item.Value.c_str() << std::endl;
 				_commandDictionary[item.Key] = item.Value;
 			}
 
@@ -143,6 +149,8 @@ void Executer::__load_config() {
 		}
 
 	}
+
+	configFile.close();
 }
 
 // Parses a command, finds if its a raw command (i.e {0,0,1}) or an alias command and turns it into a raw command.

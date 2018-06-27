@@ -11,34 +11,34 @@
 #include "listener.h"
 
 
-ChangeVariablesListener::ChangeVariablesListener() { }
+FIFOListener::FIFOListener() { }
 
-ChangeVariablesListener::~ChangeVariablesListener() {
+FIFOListener::~FIFOListener() {
 
 	close(_fileID);
 	unlink(_FIFOname.c_str());
 
 }
 
-void ChangeVariablesListener::init(const char* fifoName__o) {
+void FIFOListener::init(const std::string& fifoName__o) {
 
 	_FIFOname = fifoName__o;
 	mkfifo(_FIFOname.c_str(), 0666);
-	_fileID = open(_FIFOname.c_str(), O_RDONLY | O_NONBLOCK);
+	_fileID = open(_FIFOname.c_str(), O_RDONLY);
 
 	if(_fileID < 0) {
 
-		perror("Failed to create pipe with error: ");
-		throw "";
+		int errsv = errno;
+		throw std::runtime_error("Failed to create FIFO with error " + errsv);
 
 	}
 
 }
 
 
-void ChangeVariablesListener::run() {
+void FIFOListener::run() {
 
-	int err = read(_fileID, _buffer, 1024);
+	int err = read(_fileID, _buffer, MAX_BUFFER);
 	if(err > 0 && !_newMessage) {
 
 		_newMessage = true;
@@ -49,78 +49,18 @@ void ChangeVariablesListener::run() {
 		int errsv = errno;
 		if(errsv != EAGAIN){
 
-			perror("Failed to read command with error ");
-			throw std::runtime_error("");
+			throw std::runtime_error("Failed to read FIFO with error " + errsv);
 
 		}
 		
 	}
 }
 
-void ChangeVariablesListener::__run_thread() {
-
-	for(int reset  = 0; reset < 5; reset++) {
-		try {
-			while(true) {
-				int err = read(_fileID, _buffer, 1024);
-				if(err > 0 && !_newMessage) {
-
-					_newMessage = true;
-					std::cout << "New message" << std::endl;
-				
-				} else if(err < 0) {
-
-					perror("Failed to read command with error: ");
-					throw std::runtime_error("");
-
-				}
-
-			}
-		} catch (std::exception& e) {
-
-			std::cout << "Error in the listener: " << e.what() << std::endl;
-			
-		}
-	}
-
-}
-
-std::thread ChangeVariablesListener::spawn() {
-	return std::thread(&ChangeVariablesListener::__run_thread, this);
-}
-
-std::string ChangeVariablesListener::getMessage() {
+std::string FIFOListener::getMessage() {
 	_newMessage = false;
 	return std::string(_buffer);
 }
 
-bool ChangeVariablesListener::isNewMessage() {
+bool FIFOListener::isNewMessage() {
 	return _newMessage;
 }
-
-
-
-
-
-// int main() {
-
-// 	int fileID;
-// 	string myFIFO = "/tmp/tmpFIFO";
-// 	char buffer[1024];
-// 	char newBuffer[1024];
-
-// 	mkfifo(myFIFO.c_str(), 0666);
-
-// 	fileID = open(myFIFO.c_str(), O_RDONLY);
-
-// 	cout << "Pipe is up" << endl;
-
-// 	while(1) {
-
-// 		if(read(fileID, buffer, 1024) > 0) {
-// 			printf("%s\n", buffer);
-// 		}
-
-// 	}
-
-// }

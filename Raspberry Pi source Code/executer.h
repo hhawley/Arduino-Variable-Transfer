@@ -25,16 +25,16 @@ struct DictionaryItem {
 class Executer {
 public:
 
-	Executer(ChangeVariablesListener* listener);
-	Executer(std::shared_ptr<ChangeVariablesListener>& listener);
+	Executer();
+	Executer(FIFOListener* listener);
 	~Executer();
 
-	void init();
+	void init(const std::string&);
 	void run();
 	std::thread spawn();
 
 private:
-	std::shared_ptr<ChangeVariablesListener> _listener;
+	std::unique_ptr<FIFOListener> _listener;
 	OutputFile _outputFile;
 
 	Dictionary _devicesAlias;
