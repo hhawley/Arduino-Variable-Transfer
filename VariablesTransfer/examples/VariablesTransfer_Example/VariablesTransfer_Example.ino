@@ -3,19 +3,17 @@
 #include <VariablesTransfer.h>
 
 // Experiment relay pin
-#define RELAY_EXP_PIN 7
+#define RELAY_EXP_PIN 13
 
 // Variables in the buffer
-uint16_t* relayIsOn;
-uint16_t* value;
+static uint16_t relayIsOn = 0;
+static uint16_t value = 502;
 
 void setup() {
   Serial.begin(9600);
 
-  VarTransfer::linkVariable(0, relayIsOn);
-  VarTransfer::linkVariable(1, value);
-  *relayIsOn = 0;
-  *value = 502;
+  VarTransfer::linkVariable(0, &relayIsOn);
+  VarTransfer::linkVariable(1, &value);
 
   pinMode(RELAY_EXP_PIN, OUTPUT);
   digitalWrite(RELAY_EXP_PIN, LOW);
@@ -32,7 +30,7 @@ void loop() {
     Serial.println(err);
   }
 
-  if(*relayIsOn) { 
+  if(relayIsOn) { 
     digitalWrite(RELAY_EXP_PIN, HIGH); 
   }
   else { 
@@ -40,4 +38,3 @@ void loop() {
   }
 
 }
-
